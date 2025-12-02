@@ -3,14 +3,12 @@ version: 0.2
 env:
   variables:
     AWS_REGION: us-east-1
-    ECR_REPO_NAME: iscool-gpt
+    ECR_REPO_URI: 855035880603.dkr.ecr.us-east-1.amazonaws.com/iscool-gpt
 
 phases:
   pre_build:
     commands:
-      - echo "Obtendo conta AWS..."
-      - ACCOUNT_ID=$(aws sts get-caller-identity --query account --output text)
-      - ECR_REPO_URI=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}
+      - echo "Logando no ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
       - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION}
   build:
@@ -19,7 +17,7 @@ phases:
       - docker build -t $ECR_REPO_URI:$IMAGE_TAG .
   post_build:
     commands:
-      - echo "Push da imagem para ECR..."
+      - echo "Fazendo push da imagem..."
       - docker push $ECR_REPO_URI:$IMAGE_TAG
       - printf '[{"name":"iscool-gpt-container","imageUri":"%s"}]' $ECR_REPO_URI:$IMAGE_TAG > imagedefinitions.json
 
