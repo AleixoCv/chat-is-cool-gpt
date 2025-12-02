@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware  # 👈 IMPORTANTE
 from pydantic import BaseModel
 from typing import List, Optional
 import os
@@ -36,6 +37,24 @@ app = FastAPI(
     description="Assistente de estudos em Cloud usando Google Gemini API",
     version="1.0.0",
 )
+
+# ========= CORS CONFIG =========
+# Origens que podem acessar a API via navegador
+origins = [
+    "http://localhost:5173",  # front em dev (Vite)
+    # Quando o front estiver no S3, adicione o endpoint aqui, por exemplo:
+    # "http://iscool-gpt-frontend-855035880603.s3-website-us-east-1.amazonaws.com",
+    # ou o domínio/CloudFront que você usar.
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,       # pode ser ["*"] em ambiente de teste, se quiser liberar geral
+    allow_credentials=True,
+    allow_methods=["*"],         # GET, POST, OPTIONS, etc.
+    allow_headers=["*"],         # Content-Type, Authorization, etc.
+)
+# ========= FIM CORS CONFIG =========
 
 
 @app.get("/health")
